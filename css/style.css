@@ -19,7 +19,7 @@
 }
 
 /* ==================================================
-   ②【21〜23行目】box-sizing: border-box;
+   box-sizing: border-box;
    ==================================================
    要素の幅や高さに、padding（内側の余白）と
    border（枠線）を含めて計算する指定です。
@@ -60,6 +60,72 @@ body {
 
 button {
   font-family: inherit;
+}
+
+.start-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-app);
+  color: var(--color-text-main);
+}
+
+.start-screen[hidden] {
+  display: none;
+}
+
+.start-panel {
+  width: 480px;
+  padding: var(--panel-padding);
+}
+
+.start-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.start-lead {
+  margin: 16px 0 0;
+  color: var(--color-text-sub);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.start-level {
+  display: block;
+  width: 100%;
+  margin: 24px 0 0;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-main);
+  color-scheme: dark;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.start-begin {
+  margin-top: 24px;
+}
+
+.lab {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--column-gap);
+}
+
+.lab[hidden] {
+  display: none;
 }
 
 .site-header {
@@ -120,6 +186,98 @@ button {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
+}
+
+.level-select {
+  margin: 0;
+  padding: 2px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-sub);
+  color-scheme: dark;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.level-select:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app-view[hidden] {
+  display: none;
+}
+
+.task-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.task-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-main);
+  font: inherit;
+  font-size: 16px;
+}
+
+.task-input:disabled {
+  opacity: 0.45;
+}
+
+.task-list {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task-reset {
+  margin-top: 16px;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.task-check {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.task-check:disabled {
+  opacity: 0.45;
+}
+
+.task-title.is-done {
+  color: var(--color-text-sub);
+  text-decoration: line-through;
 }
 
 .app-name {
@@ -266,12 +424,16 @@ button {
   border-color: var(--color-accent);
 }
 
-.score-reset:disabled {
+.score-reset:disabled,
+.task-reset:disabled,
+.task-add:disabled {
   cursor: default;
   opacity: 0.45;
 }
 
-.score-reset:disabled:hover {
+.score-reset:disabled:hover,
+.task-reset:disabled:hover,
+.task-add:disabled:hover {
   border-color: var(--color-border);
 }
 
@@ -312,7 +474,7 @@ button {
 
 .log-block-code {
   flex: 1 1 0;
-  min-height: 0;
+  min-height: calc(14px * 1.6 + 8px + 12px * 2 + 14px * 1.5 * 3);
   display: flex;
   flex-direction: column;
 }
@@ -400,7 +562,7 @@ button {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  max-height: 132px;
+  max-height: calc(14px * 1.6 + 8px + (8px * 2 + 14px * 1.6) * 3 + 2px);
   min-height: 0;
   overflow: hidden;
 }
@@ -563,7 +725,8 @@ button {
   display: block;
   padding: 0 8px;
   border-left: 2px solid transparent;
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .code-line.is-active {
@@ -572,7 +735,9 @@ button {
 }
 
 .var-list {
-  padding: 8px 12px;
+  max-height: calc(8px + (4px * 2 + 14px * 1.6) * 3);
+  padding: 8px 12px 0;
+  overflow: auto;
   border-radius: 8px;
   background: var(--color-panel-inner);
 }

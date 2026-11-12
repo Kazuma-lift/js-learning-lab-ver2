@@ -6,6 +6,37 @@ const scores = {
   draw: 0,
 };
 
+const tasks = [];
+
+function resetTasks() {
+  tasks.length = 0;
+}
+
+function createInitialTasks() {
+  tasks.push({ title: 'こわそう', done: false });
+  tasks.push({ title: 'つくろう', done: false });
+  tasks.push({ title: 'ジブンを', done: false });
+  tasks.push({ title: 'セカイを', done: false });
+}
+
+createInitialTasks();
+
+const levelInfo = {
+  1: {
+    name: 'じゃんけん',
+    subtitle: '変数・条件分岐・関数・イベント処理の基本を学ぼう',
+    lead: 'あなたの手を選んでください。',
+  },
+  2: {
+    name: 'タスク管理',
+    subtitle: '真偽値・オブジェクト・配列・DOM操作の基本を学ぼう',
+    lead: 'タスクを追加してください。',
+  },
+};
+
+let currentLevel = '2';
+let isRenderingTasks = false;
+
 let stepTimer = null;
 let isAutoPlaying = false;
 let currentRound = null;
@@ -149,8 +180,7 @@ function showIdleLog() {
 }
 
 function setControlsLocked(locked) {
-  $('.hand-button').prop('disabled', locked);
-  $('.score-reset').prop('disabled', locked);
+  $('.hand-button, .score-reset, .task-input, .task-add, .task-check, .task-reset, .level-select').prop('disabled', locked);
 }
 
 function isGameLocked() {
@@ -181,6 +211,10 @@ function renderDisplayedScore(score) {
 }
 
 function renderAppAt(round, index) {
+  if (round.level === '2') {
+    renderTaskAppAt(round, index);
+    return;
+  }
   if (round.kind === 'reset') {
     $('.hand-button').removeClass('is-selected').attr('aria-pressed', 'false');
     $('.player-hand').text('—');
@@ -479,7 +513,7 @@ function onLastClick() {
 }
 
 function onHandClick(event) {
-  if (isGameLocked()) {
+  if (isGameLocked() || currentLevel !== '1') {
     return;
   }
   const hand = $(event.currentTarget).attr('data-hand');
@@ -505,7 +539,7 @@ function onHandClick(event) {
 }
 
 function onResetClick() {
-  if (isGameLocked()) {
+  if (isGameLocked() || currentLevel !== '1') {
     return;
   }
   const scoreBefore = copyScores();
@@ -551,19 +585,459 @@ function onFoldToggleClick(event) {
 }
 
 function showIdlePanel() {
-  renderCodeMessage('手を選ぶと、ここに処理のコードが表示されます。');
-  renderVariables([
-    { name: 'scores.win', value: '0', changed: false },
-    { name: 'scores.lose', value: '0', changed: false },
-    { name: 'scores.draw', value: '0', changed: false },
-  ]);
-  renderExplanation(
-    '手を選ぶと処理が始まります',
-    'グー・チョキ・パーのボタンを押すと、手の取得、CPU の手、勝敗、スコア更新の順に表示されます。',
-    'コードがどの順番で動くかを、1段階ずつ確認するためです。'
-  );
+  if (currentLevel === '2') {
+    renderCodeMessage('タスクを追加するか、チェックを付けると、ここに処理のコードが表示されます。');
+    renderVariables(taskRows(tasks, null));
+    renderExplanation(
+      'タスクを操作すると処理が始まります',
+      '追加は、入力を読む、空欄か調べる、タスクを作る、配列に入れる、画面に表示する、の順です。チェックは、状態を読む、対象を探す、done を書き換える、取り消し線を付け外しする、の順です。リセットは、一覧のタスクをすべて消します。',
+      'コードがどの順番で動くかを、1段階ずつ確認するためです。'
+    );
+  } else {
+    renderCodeMessage('手を選ぶと、ここに処理のコードが表示されます。');
+    renderVariables([
+      { name: 'scores.win', value: '0', changed: false },
+      { name: 'scores.lose', value: '0', changed: false },
+      { name: 'scores.draw', value: '0', changed: false },
+    ]);
+    renderExplanation(
+      '手を選ぶと処理が始まります',
+      'グー・チョキ・パーのボタンを押すと、手の取得、CPU の手、勝敗、スコア更新の順に表示されます。',
+      'コードがどの順番で動くかを、1段階ずつ確認するためです。'
+    );
+  }
   showIdleLog();
   updatePlaybackControls();
+}
+
+function readTaskTitle() {
+  const title = $('.task-input').val();
+  return title;
+}
+
+function isBlankTitle(title) {
+  return title.trim() === '';
+}
+
+function createTask(title) {
+  const task = {
+    title: title,
+    done: false,
+  };
+  return task;
+}
+
+function addTaskToList(task) {
+  tasks.push(task);
+  return tasks.length - 1;
+}
+
+function showTask(task, index) {
+  const $item = $('<li>', { class: 'task-item' });
+  const $check = $('<input>', { type: 'checkbox', class: 'task-check' });
+  $check.attr('data-index', String(index));
+  const checked = task.checked === true || (task.checked === undefined && task.done === true);
+  if (checked) {
+    $check.prop('checked', true);
+  }
+  const $title = $('<span>', { class: 'task-title', text: task.title });
+  if (task.done === true) {
+    $title.addClass('is-done');
+  } else {
+    $title.removeClass('is-done');
+  }
+  $item.append($check);
+  $item.append($title);
+  $('.task-list').append($item);
+}
+
+function readChecked(event) {
+  const checked = $(event.currentTarget).prop('checked') === true;
+  return checked;
+}
+
+function findTaskIndex(event) {
+  const index = Number($(event.currentTarget).attr('data-index'));
+  return index;
+}
+
+function setTaskDone(index, done) {
+  tasks[index].done = done;
+}
+
+function copyTasks() {
+  const copy = [];
+  let index = 0;
+  while (index < tasks.length) {
+    copy.push({
+      title: tasks[index].title,
+      done: tasks[index].done,
+    });
+    index += 1;
+  }
+  return copy;
+}
+
+function renderTaskList(list, paint) {
+  const $list = $('.task-list');
+  isRenderingTasks = true;
+  $list.empty();
+  let index = 0;
+  while (index < list.length) {
+    let task = list[index];
+    if (paint && paint.index === index) {
+      task = {
+        title: task.title,
+        done: paint.strike === true,
+        checked: paint.checked === true,
+      };
+    }
+    showTask(task, index);
+    index += 1;
+  }
+  isRenderingTasks = false;
+  if (isGameLocked()) {
+    $('.task-check').prop('disabled', true);
+  }
+}
+
+function taskRows(list, changedIndex) {
+  const rows = [
+    { name: 'tasks.length', value: String(list.length), changed: false },
+  ];
+  let index = 0;
+  while (index < list.length) {
+    const changed = changedIndex === index;
+    rows.push({
+      name: 'tasks[' + index + '].title',
+      value: quote(list[index].title),
+      changed: changed,
+    });
+    rows.push({
+      name: 'tasks[' + index + '].done',
+      value: String(list[index].done),
+      changed: changed,
+    });
+    index += 1;
+  }
+  return rows;
+}
+
+function renderTaskAppAt(round, index) {
+  if (round.kind === 'add') {
+    const list = index >= 4 ? round.tasksAfter : round.tasksBefore;
+    renderTaskList(list);
+    $('.task-input').val(index === 0 ? round.title : '');
+    return;
+  }
+  if (round.kind === 'reset') {
+    renderTaskList(round.tasksAfter);
+    $('.task-input').val('');
+    return;
+  }
+  renderTaskList(round.tasks, {
+    index: round.index,
+    checked: index >= 2 ? round.doneAfter : round.doneBefore,
+    strike: index >= 3 ? round.doneAfter : round.doneBefore,
+  });
+}
+
+function buildAddSteps(round) {
+  return [
+    {
+      code: readTaskTitle,
+      snippets: ['const title'],
+      title: '入力を読む',
+      what: '入力欄に書かれた文字を、title という名前で受け取っています。',
+      why: '追加するタスクの名前を、このあとの処理で使うためです。',
+      logValue: quote(round.title),
+      variables: [
+        { name: 'title', value: '未定 → ' + quote(round.title), changed: true },
+      ],
+    },
+    {
+      code: isBlankTitle,
+      snippets: ["title.trim() === ''"],
+      title: '空欄か調べる',
+      what: '前後の空白を除いた文字が空なら true、文字があれば false です。今回は文字があるので false です。',
+      why: '名前のないタスクを配列に入れないためです。',
+      logValue: 'false',
+      variables: [
+        { name: 'title', value: quote(round.title), changed: false },
+        { name: '空欄か', value: 'false', changed: true },
+      ],
+    },
+    {
+      code: createTask,
+      snippets: ['done: false'],
+      title: 'タスクを作る',
+      what: '名前と、完了したかを表す done を、一つのオブジェクトにまとめています。追加したばかりなので done は false です。',
+      why: '表示する文字と、完了したかどうかを、一つのタスクとして扱うためです。',
+      logValue: quote(round.task.title),
+      variables: [
+        { name: 'task.title', value: quote(round.task.title), changed: true },
+        { name: 'task.done', value: 'false', changed: true },
+      ],
+    },
+    {
+      code: addTaskToList,
+      snippets: ['tasks.push(task)'],
+      title: '配列に入れる',
+      what: '作ったタスクを、tasks という配列の末尾に加えています。length は入っている個数です。',
+      why: 'タスクを一つの並びで管理し、あとから番号で取り出せるようにするためです。',
+      logValue: String(round.tasksAfter.length),
+      variables: [
+        {
+          name: 'tasks.length',
+          value: round.tasksBefore.length + ' → ' + round.tasksAfter.length,
+          changed: true,
+        },
+        { name: 'tasks[' + round.index + '].title', value: quote(round.task.title), changed: true },
+        { name: 'tasks[' + round.index + '].done', value: 'false', changed: true },
+      ],
+    },
+    {
+      code: showTask,
+      snippets: ['.append($item)'],
+      title: '画面に表示する',
+      what: '配列に入ったタスクを、チェックボックスと名前にして一覧の末尾に表示しています。',
+      why: '配列の中のデータを、画面で見て操作できるようにするためです。',
+      logValue: quote(round.task.title),
+      variables: taskRows(round.tasksAfter, round.index),
+    },
+  ];
+}
+
+function buildToggleSteps(round) {
+  return [
+    {
+      code: readChecked,
+      snippets: ['.prop(\'checked\')'],
+      title: 'チェック状態を読む',
+      what: 'チェックボックスが付いているかを読んでいます。付いていれば true、外れていれば false です。',
+      why: '画面のチェックを、タスクの done に反映するためです。',
+      logValue: String(round.doneAfter),
+      variables: [
+        { name: 'checked', value: String(round.doneBefore) + ' → ' + String(round.doneAfter), changed: true },
+      ],
+    },
+    {
+      code: findTaskIndex,
+      snippets: ['data-index'],
+      title: '対象のタスクを探す',
+      what: 'チェックボックスに付けた data-index から、配列の何番目かを読んでいます。最初のタスクは 0 番です。',
+      why: 'どのタスクの done を書き換えるかを決めるためです。',
+      logValue: String(round.index),
+      variables: [
+        { name: 'index', value: String(round.index), changed: true },
+        { name: 'tasks[' + round.index + '].title', value: quote(round.title), changed: false },
+      ],
+    },
+    {
+      code: setTaskDone,
+      snippets: ['tasks[index].done = done'],
+      title: 'done を書き換える',
+      what: '配列のその番号のタスクの done を、チェックの true / false に書き換えています。',
+      why: '完了したかどうかを、画面とは別にデータとして残すためです。',
+      logValue: String(round.doneAfter),
+      variables: [
+        {
+          name: 'tasks[' + round.index + '].done',
+          value: String(round.doneBefore) + ' → ' + String(round.doneAfter),
+          changed: true,
+        },
+      ],
+    },
+    {
+      code: showTask,
+      snippets: [round.doneAfter ? ".addClass('is-done')" : ".removeClass('is-done')"],
+      title: '取り消し線を付け外しする',
+      what: 'done が true なら名前に is-done を付けて取り消し線を出し、false ならその class を外します。',
+      why: '完了したタスクを、見た目で区別するためです。',
+      logValue: String(round.doneAfter),
+      variables: [
+        { name: 'tasks[' + round.index + '].title', value: quote(round.title), changed: false },
+        { name: 'tasks[' + round.index + '].done', value: String(round.doneAfter), changed: false },
+      ],
+    },
+  ];
+}
+
+function onTaskAdd(event) {
+  event.preventDefault();
+  if (isGameLocked() || currentLevel !== '2') {
+    return;
+  }
+  const title = readTaskTitle();
+  if (isBlankTitle(title)) {
+    return;
+  }
+  const tasksBefore = copyTasks();
+  const task = createTask(title.trim());
+  const index = addTaskToList(task);
+  const round = {
+    level: '2',
+    kind: 'add',
+    title: title,
+    task: task,
+    index: index,
+    tasksBefore: tasksBefore,
+    tasksAfter: copyTasks(),
+  };
+  startRound(round, buildAddSteps(round));
+}
+
+function resetRows(before, after) {
+  const rows = [
+    {
+      name: 'tasks.length',
+      value: before.length + ' → ' + after.length,
+      changed: before.length !== after.length,
+    },
+  ];
+  let index = 0;
+  while (index < after.length) {
+    const previous = before[index];
+    rows.push({
+      name: 'tasks[' + index + '].title',
+      value: quote(after[index].title),
+      changed: !previous || previous.title !== after[index].title,
+    });
+    rows.push({
+      name: 'tasks[' + index + '].done',
+      value: String(after[index].done),
+      changed: !previous || previous.done !== after[index].done,
+    });
+    index += 1;
+  }
+  return rows;
+}
+
+function onTaskReset() {
+  if (isGameLocked() || currentLevel !== '2') {
+    return;
+  }
+  const tasksBefore = copyTasks();
+  resetTasks();
+  const tasksAfter = copyTasks();
+  const round = {
+    level: '2',
+    kind: 'reset',
+    tasksBefore: tasksBefore,
+    tasksAfter: tasksAfter,
+  };
+  startRound(round, [
+    {
+      code: resetTasks,
+      snippets: ['tasks.length = 0'],
+      title: 'タスクをリセット',
+      what: '配列に入っているタスクを、すべて消しています。件数を表す length は 0 になります。',
+      why: '追加したタスクと完了のチェックをまとめて消し、空の一覧からやり直すためです。',
+      logValue: String(tasksAfter.length),
+      variables: resetRows(tasksBefore, tasksAfter),
+    },
+  ]);
+}
+
+function onTaskCheck(event) {
+  if (isRenderingTasks || isGameLocked() || currentLevel !== '2') {
+    return;
+  }
+  const index = findTaskIndex(event);
+  if (!tasks[index]) {
+    return;
+  }
+  const doneBefore = tasks[index].done;
+  const doneAfter = readChecked(event);
+  setTaskDone(index, doneAfter);
+  const round = {
+    level: '2',
+    kind: 'toggle',
+    index: index,
+    title: tasks[index].title,
+    doneBefore: doneBefore,
+    doneAfter: doneAfter,
+    tasks: copyTasks(),
+  };
+  startRound(round, buildToggleSteps(round));
+}
+
+function emptyPlayback() {
+  return {
+    round: null,
+    steps: null,
+    index: 0,
+    pastLogs: [],
+    hideCurrentLogs: false,
+  };
+}
+
+const playbackByLevel = {
+  1: emptyPlayback(),
+  2: emptyPlayback(),
+};
+
+function capturePlayback() {
+  playbackByLevel[currentLevel] = {
+    round: currentRound,
+    steps: currentSteps,
+    index: currentIndex,
+    pastLogs: pastLogs,
+    hideCurrentLogs: hideCurrentLogs,
+  };
+}
+
+function restorePlayback(level) {
+  const saved = playbackByLevel[level];
+  currentRound = saved.round;
+  currentSteps = saved.steps;
+  currentIndex = saved.index;
+  pastLogs = saved.pastLogs;
+  hideCurrentLogs = saved.hideCurrentLogs;
+}
+
+function applyLevel(level) {
+  currentLevel = level;
+  const info = levelInfo[level];
+  $('.app-view').attr('hidden', true);
+  $('.app-view[data-level="' + level + '"]').removeAttr('hidden');
+  $('.app-name').text(info.name);
+  $('.app-subtitle').text(info.subtitle);
+  $('.panel-lead').text(info.lead);
+  $('.level-select').val(level);
+  if (typeof renderCatalogForLevel === 'function') {
+    renderCatalogForLevel(level);
+  }
+  if (currentSteps && currentRound) {
+    showStepAt(currentIndex);
+    return;
+  }
+  showIdlePanel();
+  setControlsLocked(false);
+}
+
+function onStartClick() {
+  const level = $('#start-level').val();
+  if (!levelInfo[level]) {
+    return;
+  }
+  $('.start-screen').attr('hidden', true);
+  $('.lab').removeAttr('hidden');
+  applyLevel(level);
+}
+
+function onLevelChange() {
+  const next = $('.level-select').val();
+  if (isGameLocked()) {
+    $('.level-select').val(currentLevel);
+    return;
+  }
+  if (next === currentLevel || !levelInfo[next]) {
+    return;
+  }
+  capturePlayback();
+  restorePlayback(next);
+  applyLevel(next);
 }
 
 $(function () {
@@ -584,6 +1058,11 @@ $(function () {
   $('.playback-forward').on('click', onForwardClick);
   $('.playback-last').on('click', onLastClick);
   $('.fold-toggle').on('click', onFoldToggleClick);
+  $('.task-form').on('submit', onTaskAdd);
+  $('.task-reset').on('click', onTaskReset);
+  $('.task-list').on('change', '.task-check', onTaskCheck);
+  $('.level-select').on('change', onLevelChange);
+  $('.start-begin').on('click', onStartClick);
   renderScore();
-  showIdlePanel();
+  renderTaskList(tasks);
 });

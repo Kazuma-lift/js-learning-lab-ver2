@@ -1200,12 +1200,507 @@ function renderCatalogDetail(item) {
   $detail.scrollTop(0);
 }
 
-$(function () {
+const codeCatalogLevel2 = [
+  {
+    name: 'const',
+    kind: 'JavaScript',
+    reading: 'コンスト。定数の宣言として、こう呼ばれることが多いです。',
+    officialName: '定数。同じ変数に別の値を入れ直せない宣言です。',
+    summary: 'タスクの並びに名前を付けます。名前自体は入れ替えず、中のタスクは追加したり書き換えたりします。',
+    purpose: [
+      '同じ並びを、追加や完了の切り替えのたびに名前で指すために使います。',
+      'const でも、配列の中身を増やすことや、中の done を書き換えることはできます。',
+      'このタスク管理では、tasks という名前でタスクの並びを覚えています。',
+    ],
+    usage: 'const 名前 = 最初の値 と書きます。',
+    example: "const tasks = [\n  { title: '資料を読む', done: false },\n  { title: '牛乳を買う', done: true },\n  { title: '机の上を片付ける', done: false },\n];",
+    walkthrough: [
+      { part: 'const tasks', text: 'タスクの並びに tasks という名前を付け、この名前は入れ直しません。' },
+      { part: '[ ]', text: '複数のタスクを順番に並べます。' },
+      { part: '{ title, done }', text: '1件のタスクです。名前と、完了したかどうかが入っています。' },
+    ],
+    result: [
+      'このあと tasks と書くと、この3件の並びを指します。',
+      'tasks.push(task) で4件目を足せます。tasks という名前自体は変わりません。',
+    ],
+    similar: [],
+    related: [
+      { name: '[] と {}', text: '[] が並び、{} が1件のタスクです。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '[]',
+    kind: 'JavaScript',
+    reading: '角括弧。配列を作るときはこう呼ばれます。',
+    officialName: '配列リテラル。複数の値を順番に並べて管理する書き方です。',
+    summary: 'タスクを順番に並べて管理します。最初の番号は 0 です。',
+    purpose: [
+      '件数の増減や、何番目かを指定して取り出したいときに使います。',
+      'このタスク管理では、追加のたびに末尾へ1件足します。',
+    ],
+    usage: '[値1, 値2] と書きます。値のあいだはカンマです。',
+    example: "const tasks = [\n  { title: '資料を読む', done: false },\n  { title: '牛乳を買う', done: true },\n];",
+    walkthrough: [
+      { part: '[', text: '並びの開始です。' },
+      { part: '0番', text: '資料を読む、が最初のタスクです。' },
+      { part: '1番', text: '牛乳を買う、が2件目です。番号は1からではなく0からです。' },
+    ],
+    result: [
+      'tasks[0] は「資料を読む」、tasks[1] は「牛乳を買う」です。',
+    ],
+    similar: [
+      { name: '{}', text: '{} は1件の中身を名前で管理します。[] は何件かを順番で管理します。' },
+    ],
+    related: [
+      { name: '[番号]、length、push()', text: '番号で取り出し、length で個数を知り、push() で末尾に足します。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '{}',
+    kind: 'JavaScript',
+    reading: '波括弧。データのまとまりを作るときはこう呼ばれます。',
+    officialName: 'オブジェクトリテラル。名前の付いた値を一つにまとめる書き方です。',
+    summary: '1件のタスクを、名前と完了したかどうかの組にします。',
+    purpose: [
+      '一つのものに、複数の情報を持たせたいときに使います。',
+      'このタスク管理では、title が表示する文字、done が完了したかどうかです。',
+    ],
+    usage: '{ 名前: 値, 名前: 値 } と書きます。名前と値の間はコロンです。',
+    example: "const task = {\n  title: title,\n  done: false,\n};",
+    walkthrough: [
+      { part: 'title: title', text: 'title という名前で、入力された文字を入れます。' },
+      { part: 'done: false', text: 'まだ完了していない、という true / false の値です。' },
+    ],
+    result: [
+      'task.title で名前、task.done で完了したかどうかを読めます。',
+      '追加した直後の done は false です。',
+    ],
+    similar: [
+      { name: '[]', text: '[] は順番、{} は名前で中の値を指定します。' },
+    ],
+    related: [
+      { name: '.名前', text: 'まとめたあとは task.title や task.done と書いて取り出します。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '.名前',
+    kind: 'JavaScript',
+    reading: 'ドット。ドット記法とも呼ばれます。',
+    officialName: 'プロパティアクセス。オブジェクトの中の値を名前で指定する書き方です。',
+    summary: 'タスクの中から、名前または完了したかどうかを取り出します。',
+    purpose: [
+      '1件にまとめた情報のうち、必要なものだけを使いたいときに書きます。',
+      'このタスク管理では、画面に出す文字は title、取り消し線の判断は done です。',
+    ],
+    usage: 'データ.名前 と書きます。',
+    example: "const title = task.title;\nconst done = task.done;",
+    exampleNote: '説明用の例です。アプリでは task.title を画面の文字に、task.done をチェックと取り消し線に使っています。',
+    walkthrough: [
+      { part: 'task', text: '1件のタスクです。' },
+      { part: '.title', text: 'その中の、表示する文字です。' },
+      { part: '.done', text: '完了していれば true、まだなら false です。' },
+    ],
+    result: [
+      '「牛乳を買う」で done が true のタスクなら、title は「牛乳を買う」、done は true です。',
+    ],
+    similar: [],
+    related: [
+      { name: '{}', text: 'ドットの右の名前は、{} でタスクを作ったときの名前です。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '[番号]',
+    kind: 'JavaScript',
+    reading: '添字、またはインデックス。',
+    officialName: 'インデックスアクセス。並びの指定した位置の値を取り出します。',
+    summary: 'タスクの並びの何番目かを指定して、その1件を取り出します。最初は 0 番です。',
+    purpose: [
+      'チェックされたタスクだけを書き換えたいときに使います。',
+      'このタスク管理では、チェックボックスの data-index を番号にして tasks[index] を書き換えます。',
+    ],
+    usage: '並び[番号] と書きます。番号は 0 から始まります。',
+    example: 'tasks[index].done = done;',
+    walkthrough: [
+      { part: 'tasks', text: 'タスクを並べた配列です。' },
+      { part: '[index]', text: 'index 番目の1件です。0 なら最初のタスクです。' },
+      { part: '.done = done', text: 'そのタスクの完了状態を、チェックの true / false に書き換えます。' },
+    ],
+    result: [
+      'index が 1 で done が false なら、2件目の「牛乳を買う」の done が false になります。',
+    ],
+    similar: [],
+    related: [
+      { name: 'data-index', text: 'チェックボックスを作るとき、その番号を data-index に書いています。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: 'length',
+    kind: 'JavaScript',
+    reading: 'レングス。長さとしてこう呼ばれます。',
+    officialName: 'length プロパティ。配列では、入っている値の個数です。',
+    summary: 'タスクが今何件あるかを表します。',
+    purpose: [
+      '追加したあとに、末尾の番号を知るために使います。最後の番号は length - 1 です。',
+      'このタスク管理では、push した直後の tasks.length - 1 を、新しいタスクの番号にしています。',
+    ],
+    usage: '並び.length と書きます。() は付けません。',
+    example: 'tasks.push(task);\nreturn tasks.length - 1;',
+    walkthrough: [
+      { part: 'tasks.push(task)', text: '末尾に1件足します。3件なら4件になります。' },
+      { part: 'tasks.length - 1', text: '足したあとの個数から1を引くと、今足したタスクの番号です。' },
+    ],
+    result: [
+      '3件の状態で1件足すと length は 4、返る番号は 3 です。',
+    ],
+    similar: [],
+    related: [
+      { name: 'push()', text: 'length は push() で1件足すたびに1増えます。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: 'push()',
+    kind: 'JavaScript',
+    reading: 'プッシュ。配列の末尾に加えるメソッドとしてこう呼ばれます。',
+    officialName: 'Array.prototype.push。配列の末尾に値を追加します。',
+    summary: 'タスクの並びの最後に、新しい1件を足します。',
+    purpose: [
+      'すでに並んでいるタスクを残したまま、新しいタスクを追加したいときに使います。',
+      'このタスク管理では、入力から作ったタスクを tasks の末尾に足します。',
+    ],
+    usage: '並び.push(足す値) と書きます。',
+    example: 'function addTaskToList(task) {\n  tasks.push(task);\n  return tasks.length - 1;\n}',
+    walkthrough: [
+      { part: 'task', text: '追加する1件です。title と done が入っています。' },
+      { part: 'tasks.push(task)', text: 'その1件を並びの最後に足します。' },
+      { part: 'return', text: '足したタスクの番号を、呼んだ場所へ返します。' },
+    ],
+    result: [
+      '実行前の tasks.length が 3 なら、実行後は 4 です。新しいタスクは tasks[3] です。',
+    ],
+    similar: [],
+    related: [
+      { name: '[] と length', text: '足す先は配列で、足したあとの個数は length で分かります。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: 'true / false',
+    kind: 'JavaScript',
+    reading: 'トゥルー / フォルス。真偽値としてこう呼ばれます。',
+    officialName: '真偽値。条件を調べた結果や、完了したかどうかを表す値です。',
+    summary: '完了していれば true、まだなら false です。はい・いいえのような二つの状態を表します。',
+    purpose: [
+      '二つの状態しかないものを、文字ではなくこの値で持っておきたいときに使います。',
+      'このタスク管理では、done とチェックボックスの状態を true / false で持っています。',
+    ],
+    usage: 'true または false と、小文字で書きます。',
+    example: 'const task = {\n  title: title,\n  done: false,\n};',
+    walkthrough: [
+      { part: 'done: false', text: '追加した直後は、まだ完了していません。' },
+      { part: 'true', text: 'チェックを付けると、done を true に書き換えます。' },
+    ],
+    result: [
+      'done が false のタスクには取り消し線が付きません。',
+      'done が true のタスクには取り消し線が付きます。最初から true の「牛乳を買う」がこの状態です。',
+    ],
+    similar: [],
+    related: [
+      { name: 'if と ===', text: 'done === true のように比べて、取り消し線を付けるかを決めています。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: 'if',
+    kind: 'JavaScript',
+    reading: 'イフ。条件分岐としてこう呼ばれます。',
+    officialName: 'if 文。条件を調べた結果が true のときだけ、中の処理を実行します。',
+    summary: '完了しているときだけ取り消し線を付け、空欄のときはタスクを追加しません。',
+    purpose: [
+      '状態によって、次にやること変えるときに使います。',
+      'このタスク管理では、空欄なら追加をやめ、done が true のときだけ class を足します。',
+    ],
+    usage: 'if (条件) { 結果が true のときの処理 } と書きます。',
+    example: "if (task.done === true) {\n  $title.addClass('is-done');\n}",
+    walkthrough: [
+      { part: 'task.done === true', text: '完了していれば true、まだなら false です。' },
+      { part: ".addClass('is-done')", text: 'true のときだけ、取り消し線用の class を足します。' },
+    ],
+    result: [
+      'done が true のタスクは、名前に取り消し線が付きます。',
+      'done が false のタスクは、この if の中を実行しません。',
+    ],
+    similar: [],
+    related: [
+      { name: '=== と true / false', text: 'if が受け取るのは、=== が返した true か false です。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '===',
+    kind: 'JavaScript',
+    reading: 'トリプルイコール、またはイコール三つ。',
+    officialName: '厳密等価演算子。型も値も同じかを調べます。',
+    summary: '二つの値が同じ種類で、内容も同じかを調べます。結果は true か false です。',
+    purpose: [
+      '空欄かどうか、完了しているかどうかを確かめるときに使います。',
+      'このタスク管理では、空白を除いた文字が空文字かどうかと、done が true かどうかを調べています。',
+    ],
+    usage: '左 === 右 と書きます。同じなら true、違えば false です。',
+    example: "return title.trim() === '';",
+    walkthrough: [
+      { part: 'title.trim()', text: '前後の空白を除いた文字です。' },
+      { part: "=== ''", text: '空の文字と完全に同じなら true です。' },
+    ],
+    result: [
+      '入力が「資料」なら false です。追加を続けます。',
+      '入力が空、または空白だけなら true です。タスクは追加しません。',
+    ],
+    similar: [],
+    related: [
+      { name: 'if', text: '=== の結果を if で受け取り、追加を続けるか止めるかを決めています。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '$()',
+    kind: 'jQuery',
+    reading: 'ダラー。jQuery の関数としてこう呼ばれます。',
+    officialName: 'jQuery 関数。HTML の部品を選び、jQuery で操作できる形にします。',
+    summary: '入力欄やタスクの一覧を指定して、文字の読み書きや部品の追加ができるようにします。',
+    purpose: [
+      'HTML に書いた部品を、JavaScript から操作したいときに使います。',
+      'このタスク管理では、入力欄、一覧、チェックボックスを探すために使っています。',
+    ],
+    usage: "$('CSSの指定') と書きます。.task-input は class が task-input の部品です。",
+    example: "$('.task-input')\n$('.task-list')",
+    walkthrough: [
+      { part: '$', text: 'jQuery の関数です。JavaScript から使う追加の道具です。' },
+      { part: "'.task-input'", text: 'タスク名を書く入力欄です。' },
+      { part: "'.task-list'", text: 'タスクを並べて表示する一覧です。' },
+    ],
+    result: [
+      'この2行だけでは画面は変わりません。見つけた結果に .val() や .append() を続けて操作します。',
+    ],
+    similar: [],
+    related: [
+      { name: '.val()、.append()、.text()', text: '$() で見つけた部品に、これらの操作を続けています。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '.val()',
+    kind: 'jQuery',
+    reading: 'バル。入力欄の値を読む、または入れるメソッドとしてこう呼ばれます。',
+    officialName: 'jQuery の val。フォーム部品の値を取得または設定します。',
+    summary: '入力欄に書かれている文字を読みます。引数を渡すと、その文字を入力欄に入れます。',
+    purpose: [
+      '利用者が入力した文字を、タスクの名前にしたいときに使います。',
+      'このタスク管理では、追加のときに入力欄の文字を読んでいます。',
+    ],
+    usage: "部品.val() と引数なしで書くと、今の文字を返します。部品.val('文字') と書くと、その文字に入れ替えます。",
+    example: "function readTaskTitle() {\n  const title = $('.task-input').val();\n  return title;\n}",
+    walkthrough: [
+      { part: "$('.task-input')", text: 'タスク名の入力欄を見つけます。' },
+      { part: '.val()', text: '引数がないので、今入っている文字を読みます。' },
+      { part: 'return title', text: '読んだ文字を、この関数を呼んだ場所へ返します。' },
+    ],
+    result: [
+      '入力欄が「レポートを出す」なら、title はその文字です。',
+      '空欄なら、title は空の文字です。',
+    ],
+    similar: [],
+    related: [
+      { name: '===', text: '読んだ文字が空かどうかを === で調べ、空なら追加しません。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '.text()',
+    kind: 'jQuery',
+    reading: 'テキスト。文字を入れるメソッドとしてこう呼ばれます。',
+    officialName: 'jQuery の text。要素のテキストを設定します。',
+    summary: 'タスクの名前を、画面に見える文字として入れます。入力された文字は HTML としては解釈しません。',
+    purpose: [
+      '利用者が入力した文字を、そのまま画面に出したいときに使います。',
+      'このタスク管理では、task.title を一覧の名前にしています。',
+    ],
+    usage: '部品を作るときに text: 文字 と指定すると、その文字を中身にします。',
+    example: "const $title = $('<span>', {\n  class: 'task-title',\n  text: task.title,\n});",
+    walkthrough: [
+      { part: '$(\'<span>\')', text: '名前を表示する新しい部品を作ります。' },
+      { part: 'text: task.title', text: 'タスクの名前を、その部品の文字にします。' },
+    ],
+    result: [
+      'task.title が「資料を読む」なら、一覧にその文字が表示されます。',
+      '<b> のような文字を入力しても、太字にはならず、入力したままの文字として表示されます。',
+    ],
+    similar: [],
+    related: [
+      { name: '.append()', text: '作った名前の部品を、一覧の1行に追加しています。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '.append()',
+    kind: 'jQuery',
+    reading: 'アペンド。末尾に追加するメソッドとしてこう呼ばれます。',
+    officialName: 'jQuery の append。要素の中の最後に、別の要素を追加します。',
+    summary: 'チェックボックスと名前を1行にまとめ、その行を一覧の最後に足します。',
+    purpose: [
+      '新しく作った部品を、画面の指定した場所へ出したいときに使います。',
+      'このタスク管理では、1件のタスクを一覧の末尾に表示します。',
+    ],
+    usage: '親.append(足す部品) と書きます。足した部品は、親の中の最後に入ります。',
+    example: "$item.append($check);\n$item.append($title);\n$('.task-list').append($item);",
+    walkthrough: [
+      { part: '$item.append($check)', text: '1行の中に、チェックボックスを入れます。' },
+      { part: '$item.append($title)', text: 'そのうしろに、タスクの名前を入れます。' },
+      { part: "$('.task-list').append($item)", text: 'できた1行を、一覧の最後に足します。' },
+    ],
+    result: [
+      '一覧の最後に、チェックボックスと名前が1行増えます。',
+      'すでにあるタスクの行は消えません。',
+    ],
+    similar: [],
+    related: [
+      { name: 'push()', text: 'push() が配列の末尾に足し、.append() が一覧の末尾に表示します。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '.addClass()',
+    kind: 'jQuery',
+    reading: 'アドクラス。class を追加するメソッドとしてこう呼ばれます。',
+    officialName: 'jQuery の addClass。要素の class 属性に名前を追加します。',
+    summary: '完了したタスクの名前に is-done を追加します。CSS が、その名前に取り消し線を付けています。',
+    purpose: [
+      '完了した見た目を、class 名で切り替えたいときに使います。',
+      'このタスク管理では、done が true のタスクに is-done を付けます。',
+    ],
+    usage: "部品.addClass('class名') と書きます。部品自体は消えません。",
+    example: "if (task.done === true) {\n  $title.addClass('is-done');\n}",
+    walkthrough: [
+      { part: 'task.done === true', text: '完了しているときだけ、次の行を実行します。' },
+      { part: ".addClass('is-done')", text: '名前の部品に is-done を足します。' },
+    ],
+    result: [
+      'is-done が付いた名前は、文字色が補助色になり、取り消し線が付きます。',
+      '「牛乳を買う」は最初から done が true なので、ページを開いたときから取り消し線が付いています。',
+    ],
+    similar: [
+      { name: '.removeClass()', text: 'addClass は class を足し、removeClass は外します。どちらもタスクの行自体は残します。' },
+    ],
+    related: [
+      { name: 'true / false', text: 'done が true のときだけ class を足しています。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '.removeClass()',
+    kind: 'jQuery',
+    reading: 'リムーブクラス。class を外すメソッドとしてこう呼ばれます。',
+    officialName: 'jQuery の removeClass。要素の class 属性から名前を外します。',
+    summary: '未完了に戻したタスクの名前から、is-done だけを外します。行自体は残ります。',
+    purpose: [
+      '完了の取り消し線を消したいときに使います。',
+      'このタスク管理では、done が false のときに is-done を外します。',
+    ],
+    usage: "部品.removeClass('class名') と書きます。",
+    example: "$title.removeClass('is-done');",
+    exampleNote: 'showTask の中で、done が true でないときに実行している行です。',
+    walkthrough: [
+      { part: '$title', text: 'タスクの名前を表示している部品です。' },
+      { part: ".removeClass('is-done')", text: '取り消し線用の class だけを外します。' },
+    ],
+    result: [
+      '取り消し線が消え、文字色は通常の白に戻ります。',
+      'チェックを外すと、done は false になり、この行が実行されます。',
+    ],
+    similar: [
+      { name: '.addClass()', text: '同じ class 名を、足すか外すかの違いです。' },
+    ],
+    related: [
+      { name: '.addClass()', text: '完了なら足し、未完了なら外しています。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: '.prop()',
+    kind: 'jQuery',
+    reading: 'プロップ。プロパティを読む、または書くメソッドとしてこう呼ばれます。',
+    officialName: 'jQuery の prop。DOM 要素のプロパティを取得または設定します。',
+    summary: 'チェックボックスが付いているかを、true / false で読みます。',
+    purpose: [
+      'チェックのような、HTML の表示状態を true / false で受け取りたいときに使います。',
+      'このタスク管理では、checked を読んで tasks[index].done に入れています。',
+    ],
+    usage: "部品.prop('プロパティ名') と一つだけ渡すと、その状態を読みます。",
+    example: "function readChecked(event) {\n  const checked = $(event.currentTarget).prop('checked') === true;\n  return checked;\n}",
+    walkthrough: [
+      { part: 'event.currentTarget', text: '変化したチェックボックスを、event の中から参照します。' },
+      { part: ".prop('checked')", text: '付いていれば true、外れていれば false です。' },
+      { part: '=== true', text: '結果を true か false にそろえています。' },
+    ],
+    result: [
+      'チェックを付けると checked は true です。対応するタスクの done も true になります。',
+      'チェックを外すと checked は false です。done も false になります。',
+    ],
+    similar: [],
+    related: [
+      { name: 'event.currentTarget と [番号]', text: 'どのチェックボックスかを currentTarget から知り、その番号の done を書き換えます。' },
+    ],
+    alternatives: [],
+  },
+  {
+    name: 'event.currentTarget',
+    kind: 'JavaScript',
+    reading: 'イベント ドット カレントターゲット。',
+    officialName: 'Event.currentTarget。イベントを受け取るよう登録した要素です。',
+    summary: 'チェックの変化を登録した要素を、event の中から参照します。',
+    purpose: [
+      '一覧のどのチェックボックスが変わったかを知るために使います。',
+      'このタスク管理では、そこから data-index と checked を読んでいます。',
+    ],
+    usage: '変化が起きた関数には event が渡されます。event.currentTarget がその要素です。ボタン自体が引数として渡されるわけではありません。',
+    example: "const checked = $(event.currentTarget).prop('checked') === true;\nconst index = Number($(event.currentTarget).attr('data-index'));",
+    walkthrough: [
+      { part: 'event', text: 'チェックが変化したことに関する情報です。' },
+      { part: '.currentTarget', text: '変化を受け取るよう登録したチェックボックスを参照します。' },
+      { part: 'data-index', text: 'そのチェックボックスに書いてある、配列の番号です。' },
+    ],
+    result: [
+      '2件目のチェックを変えると、index は 1 です。tasks[1] の done を書き換えます。',
+    ],
+    similar: [],
+    related: [
+      { name: '.prop() と [番号]', text: 'currentTarget からチェック状態と番号を読み、その番号のタスクを書き換えます。' },
+    ],
+    alternatives: [],
+  },
+];
+
+function renderCatalogForLevel(level) {
   const $list = $('.catalog-list');
   if ($list.length === 0) {
     return;
   }
-  codeCatalog.forEach(function (item) {
+  const items = level === '2' ? codeCatalogLevel2 : codeCatalog;
+  $list.empty();
+  $('.catalog-detail').empty();
+  $('.code-catalog').removeClass('is-open');
+  items.forEach(function (item) {
     $list.append(createCatalogItem(item));
   });
+}
+
+$(function () {
+  if (typeof renderCatalogForLevel === 'function' && $('.catalog-list').children().length === 0) {
+    renderCatalogForLevel('2');
+  }
 });
