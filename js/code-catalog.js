@@ -1213,15 +1213,15 @@ const codeCatalogLevel2 = [
       'このタスク管理では、tasks という名前でタスクの並びを覚えています。',
     ],
     usage: 'const 名前 = 最初の値 と書きます。',
-    example: "const tasks = [\n  { title: '資料を読む', done: false },\n  { title: '牛乳を買う', done: true },\n  { title: '机の上を片付ける', done: false },\n];",
+    example: "const tasks = [\n  { title: 'こわそう', done: false },\n  { title: 'つくろう', done: false },\n  { title: 'ジブンを', done: false },\n  { title: 'セカイを', done: false },\n];",
     walkthrough: [
       { part: 'const tasks', text: 'タスクの並びに tasks という名前を付け、この名前は入れ直しません。' },
       { part: '[ ]', text: '複数のタスクを順番に並べます。' },
       { part: '{ title, done }', text: '1件のタスクです。名前と、完了したかどうかが入っています。' },
     ],
     result: [
-      'このあと tasks と書くと、この3件の並びを指します。',
-      'tasks.push(task) で4件目を足せます。tasks という名前自体は変わりません。',
+      'このあと tasks と書くと、この4件の並びを指します。',
+      'tasks.push(task) で5件目を足せます。tasks という名前自体は変わりません。',
     ],
     similar: [],
     related: [
@@ -1240,14 +1240,14 @@ const codeCatalogLevel2 = [
       'このタスク管理では、追加のたびに末尾へ1件足します。',
     ],
     usage: '[値1, 値2] と書きます。値のあいだはカンマです。',
-    example: "const tasks = [\n  { title: '資料を読む', done: false },\n  { title: '牛乳を買う', done: true },\n];",
+    example: "const tasks = [\n  { title: 'こわそう', done: false },\n  { title: 'つくろう', done: false },\n  { title: 'ジブンを', done: false },\n  { title: 'セカイを', done: false },\n];",
     walkthrough: [
       { part: '[', text: '並びの開始です。' },
-      { part: '0番', text: '資料を読む、が最初のタスクです。' },
-      { part: '1番', text: '牛乳を買う、が2件目です。番号は1からではなく0からです。' },
+      { part: '0番', text: 'こわそう、が最初のタスクです。' },
+      { part: '1番', text: 'つくろう、が2件目です。番号は1からではなく0からです。' },
     ],
     result: [
-      'tasks[0] は「資料を読む」、tasks[1] は「牛乳を買う」です。',
+      'tasks[0] は「こわそう」、tasks[1] は「つくろう」です。',
     ],
     similar: [
       { name: '{}', text: '{} は1件の中身を名前で管理します。[] は何件かを順番で管理します。' },
@@ -1304,7 +1304,7 @@ const codeCatalogLevel2 = [
       { part: '.done', text: '完了していれば true、まだなら false です。' },
     ],
     result: [
-      '「牛乳を買う」で done が true のタスクなら、title は「牛乳を買う」、done は true です。',
+      '「こわそう」のタスクなら、title は「こわそう」、done は false です。',
     ],
     similar: [],
     related: [
@@ -1330,7 +1330,7 @@ const codeCatalogLevel2 = [
       { part: '.done = done', text: 'そのタスクの完了状態を、チェックの true / false に書き換えます。' },
     ],
     result: [
-      'index が 1 で done が false なら、2件目の「牛乳を買う」の done が false になります。',
+      'index が 1 で done が true なら、2件目の「つくろう」の done が true になります。',
     ],
     similar: [],
     related: [
@@ -1351,11 +1351,11 @@ const codeCatalogLevel2 = [
     usage: '並び.length と書きます。() は付けません。',
     example: 'tasks.push(task);\nreturn tasks.length - 1;',
     walkthrough: [
-      { part: 'tasks.push(task)', text: '末尾に1件足します。3件なら4件になります。' },
+      { part: 'tasks.push(task)', text: '末尾に1件足します。4件なら5件になります。' },
       { part: 'tasks.length - 1', text: '足したあとの個数から1を引くと、今足したタスクの番号です。' },
     ],
     result: [
-      '3件の状態で1件足すと length は 4、返る番号は 3 です。',
+      '4件の状態で1件足すと length は 5、返る番号は 4 です。',
     ],
     similar: [],
     related: [
@@ -1381,7 +1381,7 @@ const codeCatalogLevel2 = [
       { part: 'return', text: '足したタスクの番号を、呼んだ場所へ返します。' },
     ],
     result: [
-      '実行前の tasks.length が 3 なら、実行後は 4 です。新しいタスクは tasks[3] です。',
+      '実行前の tasks.length が 4 なら、実行後は 5 です。新しいタスクは tasks[4] です。',
     ],
     similar: [],
     related: [
@@ -1407,7 +1407,7 @@ const codeCatalogLevel2 = [
     ],
     result: [
       'done が false のタスクには取り消し線が付きません。',
-      'done が true のタスクには取り消し線が付きます。最初から true の「牛乳を買う」がこの状態です。',
+      'done が true のタスクには取り消し線が付きます。最初の4件はどれも done が false なので、開いた直後は取り消し線がありません。',
     ],
     similar: [],
     related: [
@@ -1458,7 +1458,7 @@ const codeCatalogLevel2 = [
       { part: "=== ''", text: '空の文字と完全に同じなら true です。' },
     ],
     result: [
-      '入力が「資料」なら false です。追加を続けます。',
+      '入力が「こわそう」なら false です。追加を続けます。',
       '入力が空、または空白だけなら true です。タスクは追加しません。',
     ],
     similar: [],
@@ -1511,7 +1511,7 @@ const codeCatalogLevel2 = [
       { part: 'return title', text: '読んだ文字を、この関数を呼んだ場所へ返します。' },
     ],
     result: [
-      '入力欄が「レポートを出す」なら、title はその文字です。',
+      '入力欄が「ジブンを」なら、title はその文字です。',
       '空欄なら、title は空の文字です。',
     ],
     similar: [],
@@ -1537,7 +1537,7 @@ const codeCatalogLevel2 = [
       { part: 'text: task.title', text: 'タスクの名前を、その部品の文字にします。' },
     ],
     result: [
-      'task.title が「資料を読む」なら、一覧にその文字が表示されます。',
+      'task.title が「こわそう」なら、一覧にその文字が表示されます。',
       '<b> のような文字を入力しても、太字にはならず、入力したままの文字として表示されます。',
     ],
     similar: [],
@@ -1591,7 +1591,7 @@ const codeCatalogLevel2 = [
     ],
     result: [
       'is-done が付いた名前は、文字色が補助色になり、取り消し線が付きます。',
-      '「牛乳を買う」は最初から done が true なので、ページを開いたときから取り消し線が付いています。',
+      '開いた直後の4件は done が false なので、取り消し線は付いていません。チェックを付けると is-done が付き、取り消し線が付きます。',
     ],
     similar: [
       { name: '.removeClass()', text: 'addClass は class を足し、removeClass は外します。どちらもタスクの行自体は残します。' },
@@ -1675,7 +1675,7 @@ const codeCatalogLevel2 = [
       { part: 'data-index', text: 'そのチェックボックスに書いてある、配列の番号です。' },
     ],
     result: [
-      '2件目のチェックを変えると、index は 1 です。tasks[1] の done を書き換えます。',
+      '2件目の「つくろう」のチェックを変えると、index は 1 です。tasks[1] の done を書き換えます。',
     ],
     similar: [],
     related: [
