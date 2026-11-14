@@ -683,7 +683,8 @@ button {
   font-weight: 400;
 }
 
-.catalog-text + .catalog-text {
+.catalog-text + .catalog-text,
+.catalog-example + .catalog-text {
   margin-top: 4px;
 }
 

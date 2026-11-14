@@ -138,45 +138,118 @@ const codeCatalog = [
   {
     name: 'return',
     kind: 'JavaScript',
-    reading: 'リターン。戻り値を返す命令としてこう呼ばれます。',
-    officialName: 'return 文。関数の実行を終え、値を返すことができます。',
-    summary: '関数の作業をそこで終え、必要なら結果を、その関数を呼んだ場所へ渡します。',
-    purpose: [
-      '関数の計算結果を、呼んだ側で使いたいときに書きます。return; は、返す値を指定せずに関数を終了します。この場合、JavaScript では undefined という特別な値が返されます。',
-      'return のあとに書いた残りの行は、その呼び出しでは実行されません。return を書かず、外のデータを直接書き換える関数もあります。',
-      'このじゃんけんでは、judge が「勝ち」「負け」「引き分け」を返し、decideCpuHand が CPU の番号と手を返します。手が想定外のときは return; で、そのクリックの続きを止めています。',
+    reading: 'リターン',
+    officialName: 'return文。関数の処理を終了し、必要に応じて値を返す命令です。',
+    summary: '関数の処理をそこで終了し、必要に応じて結果を呼び出し元に渡す命令です。',
+    summaryMore: [
+      'return には2つの役割があります。',
+      '1. 関数の処理をそこで終了する。',
+      '2. 関数を呼び出した場所に結果を返す。',
     ],
-    usage: '関数の { } の中に return 値 と書きます。return; は、返す値を指定せずに関数を終了します。この場合、JavaScript では undefined という特別な値が返されます。',
-    example: "if (playerHand === cpuHand) {\n  return '引き分け';\n}\nif (\n  (playerHand === 'グー' && cpuHand === 'チョキ') ||\n  (playerHand === 'チョキ' && cpuHand === 'パー') ||\n  (playerHand === 'パー' && cpuHand === 'グー')\n) {\n  return '勝ち';\n}\nreturn '負け';\n\nif (!hands.includes(hand)) {\n  return;\n}",
-    exampleNote: '上の if と return は、judge の中にそのまま書かれているコードです。下の return; は、ボタンの手がグー、チョキ、パーのどれでもないときに、クリック処理を終える実際のコードです。',
+    purpose: [
+      '主に次の2つの目的で使用します。',
+      '① 関数の計算結果を別の処理で利用するため',
+      '例えば、次のコードです。',
+      {
+        code: "function judge() {\n  return '勝ち';\n}\n\nconst result = judge();",
+      },
+      '処理の流れは以下のとおりです。',
+      '1. judge()を呼び出す。',
+      "2. return '勝ち'; が実行される。",
+      '3. 呼び出した場所に「勝ち」が返される。',
+      '4. 変数resultに「勝ち」が代入される。',
+      'つまり、return は関数で求めた結果を、別の場所で利用できるようにする役割があります。',
+      '② 不要な処理を実行させないため',
+      '例えば、次のコードです。',
+      {
+        code: "function onHandClick(hand) {\n  if (!hands.includes(hand)) {\n    return;\n  }\n\n  console.log('じゃんけん開始');\n}",
+      },
+      '想定外の手が渡された場合、return; によって関数が終了します。',
+      "そのため、console.log('じゃんけん開始'); は実行されません。",
+    ],
+    usage: [
+      '関数の { } の中で使用します。',
+      '値を返す場合',
+      { code: "return '勝ち';" },
+      '処理を終了するだけの場合',
+      { code: 'return;' },
+      'どちらも、実行された時点でその関数の残りの処理は実行されません。',
+      '補足：undefinedとは？',
+      'undefinedは、JavaScriptで「値が定義されていない」ことを表す特別な値です。',
+      '例えば、次のコードです。',
+      {
+        code: "function getResult() {\n  return;\n}\n\nconst result = getResult();\nconsole.log(result);",
+      },
+      'この場合、コンソールにはundefinedと表示されます。',
+      '理由は、return; で関数を終了したものの、返す値を指定していないためです。',
+      'return を書かずに関数の最後まで実行した場合も、通常はundefinedが返されます。',
+      'ただし、じゃんけんアプリのonHandClick関数では、この戻り値を利用していません。',
+      'そのため、このアプリでは「return; は処理を途中で終了する命令」と理解すれば十分です。',
+    ],
+    exampleIntro: 'じゃんけんアプリでは、主に2つの使い方があります。',
+    examples: [
+      {
+        title: '① 勝敗の結果を返す（judge関数）',
+        code: "if (playerHand === cpuHand) {\n  return '引き分け';\n}\n\nif (\n  (playerHand === 'グー' && cpuHand === 'チョキ') ||\n  (playerHand === 'チョキ' && cpuHand === 'パー') ||\n  (playerHand === 'パー' && cpuHand === 'グー')\n) {\n  return '勝ち';\n}\n\nreturn '負け';",
+      },
+      {
+        title: '② 処理を途中で終了する（onHandClick関数）',
+        code: 'if (!hands.includes(hand)) {\n  return;\n}',
+        note: 'ボタンから渡された手が「グー」「チョキ」「パー」のいずれでもない場合、クリック処理を途中で終了します。',
+      },
+    ],
     walkthrough: [
-      { part: "return '引き分け'", text: 'judge を呼んだ場所へ「引き分け」という文字を渡し、judge の残りは実行しません。' },
-      { part: "return '勝ち'", text: '勝ちの組だったとき、「勝ち」を渡して judge を終えます。その下の return \'負け\' は実行しません。' },
-      { part: "return '負け'", text: '引き分けでも勝ちでもなかったとき、「負け」を渡して judge を終えます。' },
-      { part: 'return;', text: '返す値を指定せずに、onHandClick を終了します。この場合、undefined という特別な値が返されます。CPU の手を決めるところ以降は実行されません。' },
+      { part: "return '引き分け';", text: '自分とCPUの手が同じ場合、「引き分け」を返してjudge関数を終了します。' },
+      { part: "return '勝ち';", text: '勝ちの組み合わせだった場合、「勝ち」を返してjudge関数を終了します。' },
+      { part: "return '負け';", text: '引き分けでも勝ちでもなかった場合、「負け」を返してjudge関数を終了します。' },
+      { part: 'return;', text: '値を指定せずに関数を終了します。このアプリでは、想定外の手が渡された場合に、CPUの手を決める処理などが実行されないようにしています。' },
     ],
     result: [
-      '手が同じなら、judge の結果は「引き分け」です。その下の勝ち判定と return \'負け\' は実行されません。',
-      '勝ちの組なら、judge の結果は「勝ち」です。return \'負け\' は実行されません。',
-      'どちらでもなければ、judge の結果は「負け」です。',
-      'return; は、返す値を指定せずに関数を終了します。この場合、undefined という特別な値が返されます。このクリック処理では受け取り先を書いていないので、画面に出る結果は、処理が途中で終わることです。',
+      '① 勝敗を判定する場合',
+      '同じ手なら「引き分け」を返す。',
+      '勝ちの組み合わせなら「勝ち」を返す。',
+      'それ以外なら「負け」を返す。',
+      'いずれもreturnが実行された時点でjudge関数は終了するため、それ以降の処理は実行されません。',
+      '② 想定外の手が渡された場合',
+      'return; によってonHandClick関数が途中で終了します。',
+      'そのため、CPUの手の決定や勝敗判定など、その後の処理は実行されません。',
     ],
     similar: [
       {
-        name: '外のデータを直接書き換える',
-        text: 'updateScore は return を書かず、scores.win などを直接 1 増やします。return を書かない関数も undefined を返しますが、このアプリではその値を使っていません。',
+        name: '外部のデータを直接変更する方法',
+        text: 'じゃんけんアプリのupdateScore関数では、returnを使わずにscores.winなどの値を直接増やしています。',
+        code: 'scores.win += 1;',
+        after: [
+          'このように、関数は必ずしも値を返して利用する必要はありません。',
+          'データを変更すること自体を目的とした関数もあります。',
+        ],
       },
     ],
     related: [
       {
         name: 'function',
-        text: 'return は関数の中で使います。関数の外に書いても、呼んだ場所へ値を返す役にはなりません。',
+        text: '関数を定義するためのキーワードです。returnは、通常、関数の中で使用します。',
+      },
+      {
+        name: 'const',
+        text: '変数を宣言するキーワードです。returnで返された値を変数に保存することもできます。',
+        code: 'const result = judge();',
+      },
+      {
+        name: 'if',
+        text: '条件によって処理を分岐する命令です。ifとreturnを組み合わせることで、特定の条件が成立した場合に関数を終了できます。',
       },
     ],
     alternatives: [
       {
-        name: 'scores を直接増やす',
-        text: '勝敗の文字を返さず、judge の中で点数まで増やすこともできます。このアプリでは、判定と点数の加算を別の関数に分けています。',
+        name: '勝敗判定と点数の加算を1つの関数にまとめる',
+        text: 'じゃんけんの勝敗判定と点数の加算を、1つの関数にまとめることもできます。例えば、judge関数の中で直接scores.winなどを増やす方法です。ただし、このアプリでは役割を分けています。',
+        after: [
+          'judge：勝敗を判定して結果を返す。',
+          'updateScore：判定結果に応じて点数を更新する。',
+          'onHandClick：クリック時の処理を進め、必要に応じて途中で終了する。',
+          '関数ごとに役割を分けることで、コードの処理内容を理解しやすくしています。',
+        ],
       },
     ],
   },
@@ -263,48 +336,6 @@ const codeCatalog = [
       {
         name: '勝ちの組ごとに if を書く',
         text: '組が三つだけなので、if を三回書くこともできます。条件を一か所にまとめて読むため、|| でつないでいます。',
-      },
-    ],
-  },
-  {
-    name: '!',
-    kind: 'JavaScript',
-    reading: 'ノット、またはエクスクラメーション。否定としてこう呼ばれます。',
-    officialName: '論理否定演算子です。',
-    summary: 'true と false を逆にします。!true は false、!false は true です。',
-    purpose: [
-      '「そうである」ではなく「そうではない」ときに作業したいときに使います。',
-      '条件を逆に書くと、先に異常な場合を終えて、残りの行を正常な場合だけにできます。if の else に分けることでも、同じ分岐はできます。',
-      'このじゃんけんでは、押された手がグー、チョキ、パーのどれでもないとき、!hands.includes(hand) が true になり、そのクリックの続きを止めています。',
-    ],
-    usage: '!値 と、値のすぐ左に書きます。値が true なら false、false なら true になります。文字や数字に付けると、先に「値があるか」のような判断へ変換してから逆にします。このアプリが逆にしているのは、includes() が返す true / false です。',
-    example: 'if (!hands.includes(hand)) {\n  return;\n}',
-    walkthrough: [
-      { part: 'hands.includes(hand)', text: '押された手が、三つの手の並びに入っていれば true、入っていなければ false です。' },
-      { part: '!', text: 'その true / false を逆にします。並びの中に無いときだけ true になります。' },
-      { part: 'if', text: '逆にした結果が true のとき、次の return を実行します。' },
-      { part: 'return;', text: '値は返さず、このクリック処理の残りを実行しません。' },
-    ],
-    result: [
-      'hand が「グー」なら includes は true、! を付けると false です。return は実行されず、勝敗の処理へ進みます。',
-      'hand が三つの手のどれでもなければ includes は false、! を付けると true です。そこでクリック処理が終わります。',
-    ],
-    similar: [
-      {
-        name: 'if の else',
-        text: '「並びの中にある」ときは続け、「無い」ときは止める、と else で書くこともできます。このアプリは、無い場合を先に return で終えています。',
-      },
-    ],
-    related: [
-      {
-        name: 'includes()',
-        text: '! が逆にしているのは、includes() の true / false です。',
-      },
-    ],
-    alternatives: [
-      {
-        name: 'if (hands.includes(hand)) { 続く処理 }',
-        text: '正しい手のときだけ中の処理を実行する書き方でも、想定外の手では点数を増やしません。このアプリは、想定外なら先に return する形にしています。',
       },
     ],
   },
@@ -550,12 +581,7 @@ const codeCatalog = [
         text: 'グー、チョキ、パーと一回ずつ === で比べても、この三つの文字列なら同じ結果になります。手が増えても呼び出しが一回で済むので includes() を使っています。',
       },
     ],
-    related: [
-      {
-        name: '!',
-        text: 'includes() の結果を逆にして、「入っていないとき」に処理を止めています。',
-      },
-    ],
+    related: [],
     alternatives: [
       {
         name: "hand === 'グー' || hand === 'チョキ' || hand === 'パー'",
@@ -1105,10 +1131,32 @@ const codeCatalog = [
   },
 ];
 
+function appendCatalogPieces($block, value) {
+  if (!value) {
+    return;
+  }
+  const pieces = Array.isArray(value) ? value : [value];
+  pieces.forEach(function (piece) {
+    if (typeof piece === 'string') {
+      $block.append($('<p>', { class: 'catalog-text', text: piece }));
+      return;
+    }
+    if (piece.title) {
+      $block.append($('<p>', { class: 'catalog-text', text: piece.title }));
+    }
+    if (piece.code) {
+      $block.append($('<pre>', { class: 'catalog-example', text: piece.code }));
+    }
+    if (piece.note) {
+      $block.append($('<p>', { class: 'catalog-text', text: piece.note }));
+    }
+  });
+}
+
 function appendCatalogBlock($parent, label, text) {
   const $block = $('<div>', { class: 'catalog-block' });
   $block.append($('<p>', { class: 'catalog-label', text: label }));
-  $block.append($('<p>', { class: 'catalog-text', text: text }));
+  appendCatalogPieces($block, text);
   $parent.append($block);
 }
 
@@ -1121,6 +1169,10 @@ function appendCatalogLines($parent, label, lines) {
   lines.forEach(function (line) {
     if (typeof line === 'string') {
       $block.append($('<p>', { class: 'catalog-text', text: line }));
+      return;
+    }
+    if (line.code) {
+      appendCatalogPieces($block, line);
       return;
     }
     const $line = $('<p>', { class: 'catalog-text' });
@@ -1139,6 +1191,10 @@ function appendCatalogRelations($parent, label, items) {
   $block.append($('<p>', { class: 'catalog-label', text: label }));
   items.forEach(function (item) {
     $block.append($('<p>', { class: 'catalog-text', text: item.name + '：' + item.text }));
+    if (item.code) {
+      $block.append($('<pre>', { class: 'catalog-example', text: item.code }));
+    }
+    appendCatalogPieces($block, item.after);
   });
   $parent.append($block);
 }
@@ -1182,13 +1238,18 @@ function renderCatalogDetail(item) {
     '読み方：' + item.reading,
     '正式名称：' + item.officialName,
   ]);
-  appendCatalogBlock($detail, '一言でいうと', item.summary);
+  appendCatalogBlock($detail, '一言でいうと', [item.summary].concat(item.summaryMore || []));
   const $exampleBlock = $('<div>', { class: 'catalog-block' });
   $exampleBlock.append($('<p>', { class: 'catalog-label', text: '実際のコード例' }));
-  if (item.exampleNote) {
-    $exampleBlock.append($('<p>', { class: 'catalog-text', text: item.exampleNote }));
+  if (item.examples) {
+    appendCatalogPieces($exampleBlock, item.exampleIntro);
+    appendCatalogPieces($exampleBlock, item.examples);
+  } else {
+    if (item.exampleNote) {
+      $exampleBlock.append($('<p>', { class: 'catalog-text', text: item.exampleNote }));
+    }
+    $exampleBlock.append($('<pre>', { class: 'catalog-example', text: item.example }));
   }
-  $exampleBlock.append($('<pre>', { class: 'catalog-example', text: item.example }));
   $detail.append($exampleBlock);
   appendCatalogLines($detail, 'コードの読み方', item.walkthrough);
   appendCatalogLines($detail, '実行するとどうなるのか', item.result);
